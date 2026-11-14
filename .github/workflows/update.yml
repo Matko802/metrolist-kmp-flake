@@ -35,4 +35,4 @@ jobs:
           git commit -m "metrolist: update to ${version}"
           git tag -f "v${version}"
           git push origin "HEAD:main"
-          git push origin "v${version}"
+          git push --force origin "v${version}"
