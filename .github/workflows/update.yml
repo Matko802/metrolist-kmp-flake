@@ -1,0 +1,38 @@
+name: Update Metrolist
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - name: Update sources.nix
+        run: ./scripts/update.sh
+      - name: Verify flake
+        run: nix eval --raw .#packages.x86_64-linux.default.name
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- sources.nix; then
+            echo "Already up to date."
+            exit 0
+          fi
+          version="$(sed -n 's/^  version = "\(.*\)";$/\1/p' sources.nix)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sources.nix
+          git commit -m "metrolist: update to ${version}"
+          git tag -f "v${version}"
+          git push origin "HEAD:main"
+          git push origin "v${version}"
