@@ -1,5 +1,5 @@
 {
-  description = "Metrolist KMP desktop music player from the upstream AppImage";
+  description = "Metrolist KMP nightly desktop music player from the upstream AppImage";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";

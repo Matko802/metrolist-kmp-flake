@@ -51,18 +51,19 @@ let
       install -m 444 -D ${appimageContents}/Metrolist.desktop $out/share/applications/metrolist-kmp-flake.desktop
       chmod u+w $out/share/applications/metrolist-kmp-flake.desktop
       substituteInPlace $out/share/applications/metrolist-kmp-flake.desktop \
-        --replace-fail 'Exec=bin/Metrolist' 'Exec=metrolist-kmp-flake' \
+        --replace-fail 'Exec=Metrolist %u' 'Exec=metrolist-kmp-flake %u' \
         --replace-fail 'Icon=Metrolist' 'Icon=metrolist-kmp-flake'
       install -Dm444 ${appimageContents}/Metrolist.png $out/share/icons/hicolor/512x512/apps/metrolist-kmp-flake.png
       install -Dm444 ${appimageContents}/Metrolist.png $out/share/pixmaps/metrolist-kmp-flake.png
     '';
 
     meta = with lib; {
-      description = "Metrolist KMP desktop music player packaged from the upstream AppImage";
+      description = "Metrolist KMP nightly desktop music player packaged from the upstream AppImage";
       longDescription = ''
         Metrolist is a YouTube Music client. This package wraps the upstream
-        Compose Multiplatform (KMP) desktop AppImage and adds WebKitGTK 4.1 so
-        embedded web views (login dialogs, Last.fm browser) work on NixOS.
+        Compose Multiplatform (KMP) desktop nightly AppImage and adds WebKitGTK
+        4.1 so embedded web views (login dialogs, Last.fm browser) work on
+        NixOS.
       '';
       homepage = "https://github.com/MetrolistGroup/Metrolist";
       license = licenses.gpl3Only;

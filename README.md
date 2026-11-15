@@ -1,11 +1,13 @@
 # metrolist-kmp-flake
 
 Metrolist desktop — a YouTube Music client built with Compose Multiplatform —
-packaged from the upstream Linux AppImage.
+packaged from the upstream nightly Linux AppImage.
 
-- Source: `metrolist-desktop-linux-x64-<version>.AppImage` downloaded with
-  `fetchurl` from the upstream GitHub release, pinned by URL and hash in
-  `sources.nix`
+- Source: `Metrolist-Desktop-linux-x64.AppImage` downloaded with `fetchurl`
+  from the upstream [`nightly` release](https://github.com/MetrolistGroup/Metrolist/releases/tag/nightly),
+  pinned by URL and hash in `sources.nix`. The `nightly` release is a rolling
+  tag, so `version` is `nightly-<release date>` (for example
+  `nightly-2026-11-15`) and the hash changes with every upstream build
 - Binary: `metrolist-kmp-flake` (with `.desktop` launcher and the Metrolist icon)
 - Extra runtime libraries: WebKitGTK 4.1 (`libwebkit2gtk-4.1.so.0`) for the
   embedded login / Last.fm web views, plus GLib-Networking wired into
@@ -51,20 +53,30 @@ users.users."you".packages = with pkgs; [
 ];
 ```
 
+## Known issues
+
+- **Floating search is broken upstream** ([#4699](https://github.com/MetrolistGroup/Metrolist/issues/4699),
+  [#4739](https://github.com/MetrolistGroup/Metrolist/issues/4739)): with
+  Appearance → *Floating search* enabled, clicking the search bar or pressing
+  `Ctrl+K` opens an overlay that never receives keyboard focus, so search
+  appears dead until `Escape` is pressed. Keep the setting off (the default) to
+  use the inline search bar; the fix is pending in
+  [PR #4762](https://github.com/MetrolistGroup/Metrolist/pull/4762) and will be
+  picked up automatically once it lands in a nightly build.
+
 ## Update
 
 `sources.nix` is the only file that needs to change between releases.
 
 Automatically: the `Update Metrolist` GitHub Actions workflow runs every day
-and on manual dispatch. It reads the latest upstream release, prefetches the
-x64 AppImage to compute the hash, rewrites `sources.nix`, commits, and tags the
-release.
+and on manual dispatch. It resolves the current `nightly` release, prefetches
+the x64 AppImage to compute the hash, rewrites `sources.nix`, commits, and
+force-updates the rolling `nightly` tag.
 
 Manually:
 
 ```bash
-./scripts/update.sh          # latest upstream release
-./scripts/update.sh --force  # re-pin the current version
+./scripts/update.sh   # re-pin the current nightly AppImage
 ```
 
 Then refresh consumers that lock this flake:

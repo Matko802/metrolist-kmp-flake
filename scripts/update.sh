@@ -4,33 +4,29 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 repo="MetrolistGroup/Metrolist"
-force=0
+asset="Metrolist-Desktop-linux-x64.AppImage"
+url="https://github.com/${repo}/releases/download/nightly/${asset}"
 
-for arg in "$@"; do
-  case "$arg" in
-    -f|--force) force=1 ;;
-    *)
-      echo "usage: $0 [--force]" >&2
-      exit 2
-      ;;
-  esac
-done
-
-tag="${METROLIST_TAG:-$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
-  | python3 -c 'import json, sys; print(json.load(sys.stdin)["tag_name"])')}"
-
-version="${tag#v}"
-url="https://github.com/${repo}/releases/download/${tag}/metrolist-desktop-linux-x64-${version}.AppImage"
-current="$(sed -n 's/^  version = "\(.*\)";$/\1/p' sources.nix)"
-
-if [ "${version}" = "${current}" ] && [ "${force}" -eq 0 ]; then
-  echo "sources.nix is already at ${version}"
-  exit 0
+if [ "$#" -gt 0 ]; then
+  echo "usage: $0" >&2
+  exit 2
 fi
 
+release="$(curl -fsSL "https://api.github.com/repos/${repo}/releases/tags/nightly")"
+published="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["published_at"][:10])' <<<"${release}")"
+version="nightly-${published}"
+
+current_version="$(sed -n 's/^  version = "\(.*\)";$/\1/p' sources.nix)"
+current_hash="$(sed -n 's/^  hash = "\(.*\)";$/\1/p' sources.nix)"
+
 echo "fetching ${url}"
-hash="$(nix store prefetch-file --json --name "metrolist-desktop-linux-x64-${version}.AppImage" "${url}" \
+hash="$(nix store prefetch-file --json --name "${asset}" "${url}" \
   | python3 -c 'import json, sys; print(json.load(sys.stdin)["hash"])')"
+
+if [ "${version}" = "${current_version}" ] && [ "${hash}" = "${current_hash}" ]; then
+  echo "sources.nix is already at ${version} (${hash})"
+  exit 0
+fi
 
 cat > sources.nix <<EOF
 {
