@@ -17,6 +17,25 @@
         default = metrolist-kmp-flake;
       });
 
+      apps = forAllSystems (pkgs: {
+        update = {
+          type = "app";
+          program = "${pkgs.writeShellApplication {
+            name = "metrolist-update";
+            runtimeInputs = with pkgs; [
+              bash
+              coreutils
+              curl
+              nix
+              python3
+            ];
+            text = ''
+              exec ${./scripts/update.sh} "$@"
+            '';
+          }}/bin/metrolist-update";
+        };
+      });
+
       overlays.default = final: _prev: {
         metrolist-kmp-flake = final.callPackage ./package.nix { };
       };

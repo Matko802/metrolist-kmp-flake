@@ -68,21 +68,26 @@ users.users."you".packages = with pkgs; [
 
 `sources.nix` is the only file that needs to change between releases.
 
-Automatically: the `Update Metrolist` GitHub Actions workflow runs every day
-and on manual dispatch. It resolves the current `nightly` release, prefetches
-the x64 AppImage to compute the hash, rewrites `sources.nix`, commits, and
+Automatically: the `Update Metrolist` GitHub Actions workflow runs every hour
+and on manual dispatch. It reads the current `nightly` release from the GitHub
+API, takes the asset's published SHA-256 digest (no 140 MB download), rewrites
+`sources.nix`, builds the package to verify the hash, then commits and
 force-updates the rolling `nightly` tag.
 
 Manually:
 
 ```bash
-./scripts/update.sh   # re-pin the current nightly AppImage
+nix run .#update              # re-pin the current nightly AppImage
+nix run .#update -- --check   # exit 1 when sources.nix is stale
 ```
 
-Then refresh consumers that lock this flake:
+The `nightly` release is a rolling tag: its asset is replaced every day, so a
+pinned hash goes stale. A pure Nix evaluation cannot fetch without a hash, so
+the hash has to be refreshed out-of-band. Consumers should refresh their lock
+regularly, for example from a systemd timer:
 
 ```bash
-nix flake update metrolist-kmp-flake
+nix flake update metrolist-kmp-flake --flake /path/to/nixos
 ```
 
 Note that scheduled workflows are disabled by GitHub after 60 days without
