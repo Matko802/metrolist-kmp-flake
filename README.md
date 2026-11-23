@@ -3,11 +3,12 @@
 Metrolist desktop — a YouTube Music client built with Compose Multiplatform —
 packaged from the upstream nightly Linux AppImage.
 
-- Source: `Metrolist-Desktop-linux-x64.AppImage` downloaded with `fetchurl`
-  from the upstream [`nightly` release](https://github.com/MetrolistGroup/Metrolist/releases/tag/nightly),
-  pinned by URL and hash in `sources.nix`. The `nightly` release is a rolling
-  tag, so `version` is `nightly-<release date>` (for example
-  `nightly-2026-11-15`) and the hash changes with every upstream build
+- Source: `Metrolist-Desktop-linux-x64.AppImage`, downloaded with `fetchurl`
+  from an immutable mirror in this repo's
+  [`mirror` release](https://github.com/Matko802/metrolist-kmp-flake/releases/tag/mirror)
+  and pinned by URL and hash in `sources.nix`. The upstream `nightly` release
+  is a rolling tag whose asset is replaced throughout the day, so the mirror
+  stores every build under a unique name; once pinned, a hash never goes stale
 - Binary: `metrolist-kmp-flake` (with `.desktop` launcher and the Metrolist icon)
 - Extra runtime libraries: WebKitGTK 4.1 (`libwebkit2gtk-4.1.so.0`) for the
   embedded login / Last.fm web views, plus GLib-Networking wired into
@@ -70,25 +71,26 @@ users.users."you".packages = with pkgs; [
 
 Automatically: the `Update Metrolist` GitHub Actions workflow runs every hour
 and on manual dispatch. It reads the current `nightly` release from the GitHub
-API, takes the asset's published SHA-256 digest (no 140 MB download), rewrites
-`sources.nix`, builds the package to verify the hash, then commits and
-force-updates the rolling `nightly` tag.
+API, downloads it, checks the published SHA-256 digest, uploads it to the
+`mirror` release under a unique name, and rewrites `sources.nix` to point at
+that immutable URL. It then builds the package to verify the hash before
+committing.
 
-Manually:
+The mirror is what makes stale locks safe: each upstream build gets its own
+release asset, so a consumer pinned to an old commit keeps fetching the exact
+bytes its hash was computed from, even after upstream replaces the `nightly`
+asset.
 
-```bash
-nix run .#update              # re-pin the current nightly AppImage
-nix run .#update -- --check   # exit 1 when sources.nix is stale
-```
-
-The `nightly` release is a rolling tag: its asset is replaced every day, so a
-pinned hash goes stale. A pure Nix evaluation cannot fetch without a hash, so
-the hash has to be refreshed out-of-band. Consumers should refresh their lock
-regularly, for example from a systemd timer:
+Manually (set `GH_TOKEN` to mirror; without it the script pins the mutable
+upstream URL):
 
 ```bash
-nix flake update metrolist-kmp-flake --flake /path/to/nixos
+GH_TOKEN=... nix run .#update              # mirror and re-pin the current nightly
+GH_TOKEN=... nix run .#update -- --check   # exit 1 when sources.nix is stale
 ```
+
+Consumers only need `nix flake update metrolist-kmp-flake` when they want a
+newer build; old locks remain valid.
 
 Note that scheduled workflows are disabled by GitHub after 60 days without
 repository activity; re-enable them from the Actions tab if that happens.

@@ -3,6 +3,12 @@ name: Update Metrolist
 on:
   schedule:
     - cron: "17 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/update.yml
+      - scripts/update.sh
   workflow_dispatch:
 
 permissions:
@@ -11,6 +17,9 @@ permissions:
 concurrency:
   group: update
   cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   update:
