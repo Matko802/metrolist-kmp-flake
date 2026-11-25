@@ -1,5 +1,5 @@
 {
   version = "nightly-2026-11-25";
-  url = "https://github.com/Matko802/metrolist-kmp-flake/releases/download/mirror/Metrolist-Desktop-linux-x64-nightly-2026-11-25-7b3a55e12352.AppImage";
-  hash = "sha256:7b3a55e123523db9f4ca044128eb91495a57c7245e8072aa1d0fe56ce4cce8bf";
+  url = "https://github.com/Matko802/metrolist-kmp-flake/releases/download/mirror/Metrolist-Desktop-linux-x64-nightly-2026-11-25-8061d2952d93.AppImage";
+  hash = "sha256:8061d2952d93e1bc64d0a1dd1a768d6352cd93381bf3f6e2f2e9533deb6bde19";
 }
